@@ -1,70 +1,102 @@
-#include <stdio.h>
-#include <ctype.h>
-#include <string.h>
-#include <stdlib.h>
+#define HELP "\n"                                                        \
+             "Frequency to wavelength convert\n"                         \
+             "Usage: freq2wavelen <freq(s)> \n"                             \
+             "                    <freq(s)> <out> \n\n"                     \
+             "<freq>: input value [double] or variable name [string] \n" \
+             "<out> : output variable name [string] \n"
 
-#define C0 299792458            // Speed of light in m/s
-#define MAX_FREQUENCY_LENGTH 50 //
+#include <stdio.h>
+// #include <ctype.h>
+// #include <string.h>
+// #include <stdlib.h>
+#include <sys/stat.h>
+#include <stdbool.h>
+
+// return true if the file specified
+// by the filename exists
+bool file_exists(const char *filename)
+{
+  struct stat buffer;
+  return stat(filename, &buffer) == 0 ? true : false;
+}
+
+#include "jansson.h"
+
+#define C0 299792458        // Speed of light in m/s
+// #define MAX_FREQ_STR_LEN 50 //
 
 int main(int argc, char *argv[])
 {
-  char sfreq[MAX_FREQUENCY_LENGTH] = {'\0'};
-  char pfreq[MAX_FREQUENCY_LENGTH] = {'\0'};
 
-  /* lower case all */
-  for (int i = 1; i < argc; ++i)
-    for (int j = 0; argv[i][j]; j++)
-      argv[i][j] = tolower(argv[i][j]);
-
-  /* check for postfix without white space */
-  if (argc == 2)
+  if (argc == 1)
   {
-    int m = 0, n = 0;
-    for (int i = 0; argv[1][i]; ++i)
+    printf(HELP);
+    return 0;
+  }
+
+  struct stat stat_buff;
+  double arg = 0, *args = NULL;
+  double val = 0, *vals = NULL;
+
+  if (argc >= 2)
+  {
+    bool var_found = false;
+    if (stat("workspace.json", &stat_buff) == 0)
     {
-      if (isalpha(argv[1][i]))
-        pfreq[n++] = argv[1][i];
-      else
-        sfreq[m++] = argv[1][i];
-    }
-    sfreq[m] = '\0';
-    pfreq[n] = '\0';
-  }
+      json_error_t *json_error = NULL;
+      json_t *workspace = json_load_file("workspace.json", 0, json_error);
+      if (workspace != NULL && json_typeof(workspace) == JSON_OBJECT)
+      {
+        size_t index;
+        json_t *value;
+        json_array_foreach(json_object_get(workspace, "variables"), index, value)
+        {
+          if (strcmp(json_string_value(json_object_get(value, "name")), argv[1]) == 0)
+          {
+            json_t *variable = json_object_get(value, "value");
+            if (variable && (json_typeof(variable) == JSON_REAL || json_typeof(variable) == JSON_ARRAY))
+            {
+              var_found = true;
+              if (json_typeof(variable) == JSON_REAL)
+                arg = json_number_value(variable);
+              else
+              {
+                // vector operation here
+              }
+            }
 
-  /* check for postfix after white space */
-  if (argc == 3)
-  {
-    snprintf(sfreq, MAX_FREQUENCY_LENGTH, "%s", argv[1]);
-    snprintf(pfreq, MAX_FREQUENCY_LENGTH, "%s", argv[2]);
+            break;
+          }
+        }
+      }
+      json_decref(workspace);
+    }
+
+    if (var_found)
+    {
+      printf("Variable found in workspace\n");
+    }
+    if (!var_found)
+      arg = atof(argv[1]);
   }
-  printf("Frequency number: %f %s\n", atof(sfreq), pfreq);
 
   /* calculate wavelength */
-  double wlen = 0;
-  if (pfreq[0] == '\0')
-    wlen = (float)(C0) / atof(sfreq);
-  else if (strcmp(pfreq, "hz") == 0)
-    wlen = (float)(C0) / (atof(sfreq) * 1E0);
-  else if (strcmp(pfreq, "khz") == 0)
-    wlen = (float)(C0) / (atof(sfreq) * 1E3);
-  else if (strcmp(pfreq, "mhz") == 0)
-    wlen = (float)(C0) / (atof(sfreq) * 1E6);
-  else if (strcmp(pfreq, "ghz") == 0)
-    wlen = (float)(C0) / (atof(sfreq) * 1E9);
-  else if (strcmp(pfreq, "thz") == 0)
-    wlen = (float)(C0) / (atof(sfreq) * 1E12);
-  else
+  if (!args)
   {
-    printf("Unrecognized freqeuncy postfix: %s\n", pfreq);
-    return 1;
+    printf("%.6e\n", arg);
+    double wavelen = (double)(C0) / arg;
+    printf("%.6e", wavelen);
   }
 
-  printf("Wavelength %f [m]\n", wlen);
-  // char ans[MAX_FREQUENCY_LENGTH];
-  // sprintf(ans, "ANS=%f", wlen);
-  // _putenv("AND=Deneeme");
+  /* print out and add workspace */
+  if (stat("workspace.json", &stat_buff) == 0)
+  {
+    json_error_t *json_error = NULL;
+    json_t *workspace = json_load_file("workspace.json", 0, json_error);
+    if (workspace != NULL && json_typeof(workspace) == JSON_OBJECT)
+    {
+    }
+  }
 
-  printf("Speed of light: %f\n", (float)C0);
-  // printf("Speed of light: %f\n", (float)C0);
   return 0;
 }
