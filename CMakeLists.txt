@@ -12,6 +12,8 @@ endif (WIN32)
 
 # submodules
 if (WIN32)
+  execute_process(COMMAND "${GIT_EXECUTABLE}" "config" "http.postBuffer" "524288000" WORKING_DIRECTORY ${c-tools_SOURCE_DIR} RESULT_VARIABLE res)
+  message("Executing '${GIT_EXECUTABLE} http.postBuffer 524288000' = '${res}'")
   execute_process(COMMAND "${GIT_EXECUTABLE}" "submodule" "init" WORKING_DIRECTORY ${c-tools_SOURCE_DIR} RESULT_VARIABLE res)
   message("Executing '${GIT_EXECUTABLE} submodule init' = '${res}'")
   execute_process(COMMAND "${GIT_EXECUTABLE}" "submodule" "update" WORKING_DIRECTORY ${c-tools_SOURCE_DIR} RESULT_VARIABLE res)
@@ -30,5 +32,5 @@ endif (WIN32)
 
 
 file(GLOB SOURCES "src/*.cpp" "src/*.c")
-add_executable(freq2wavelen freq2wavelen.c )
+add_executable(freq2wavelen freq2wavelen.c)
 
