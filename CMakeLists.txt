@@ -30,7 +30,8 @@ if (WIN32)
   message("Executing '${bashlab_SOURCE_DIR}/vcpkg-261c458/vcpkg.exe install jansson' = '${res}'")
 endif (WIN32)
 
-add_definitions(-DWORKSPACE_FILE="bashlab.workspace")
+include_directories(include)
+
 
 
 file(GLOB SOURCES "src/*.cpp" "src/*.c")
