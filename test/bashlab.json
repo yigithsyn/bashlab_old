@@ -1,0 +1,12 @@
+{
+  "variables": [
+    {
+      "name": "freq",
+      "value": 1e3
+    },
+    {
+      "name": "freqs",
+      "value": [5E6, 3E9]
+    }
+  ]
+}

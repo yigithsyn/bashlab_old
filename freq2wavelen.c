@@ -40,7 +40,8 @@ int main(int argc, char *argv[])
     return 0;
   }
 
-  double *freq = malloc(sizeof(double)), *wlen = malloc(sizeof(double));
+  size_t arg_len = 0;
+  double *freq = NULL, *wlen = NULL;
   workspace = json_load_file(WORKSPACE, 0, json_error);
   if (stat(WORKSPACE, &stat_buff) == 0)
     if (workspace != NULL && json_typeof(workspace) == JSON_OBJECT)
@@ -56,67 +57,53 @@ int main(int argc, char *argv[])
   {
     if (valid_workspace)
     {
-      size_t index;
-      json_t *variable;
-      json_array_foreach(json_object_get(workspace, "variables"), index, variable)
+      size_t var_index;
+      json_t *var;
+      json_array_foreach(json_object_get(workspace, "variables"), var_index, var)
       {
-        if (strcmp(json_string_value(json_object_get(variable, "name")), argv[1]) == 0)
+        if (strcmp(json_string_value(json_object_get(var, "name")), argv[1]) == 0)
         {
           if (DEBUG)
             printf("[DEBUG] Argument '%s' found in workspace.\n", argv[1]);
-          if (json_object_get(variable, "value") != NULL)
+          if (json_object_get(var, "value") != NULL)
           {
             if (DEBUG)
               printf("[DEBUG] Argument '%s' value found in workspace.\n", argv[1]);
-            if (json_typeof(json_object_get(variable, "value")) == JSON_REAL)
+            if (json_typeof(json_object_get(var, "value")) == JSON_REAL)
             {
-              freq[0] = json_number_value(json_object_get(variable, "value"));
+              arg_len = 1;
+              freq = malloc(sizeof(double));
+              freq[0] = json_number_value(json_object_get(var, "value"));
               if (DEBUG)
                 printf("[DEBUG] Value of '%s' is = %.6e.\n", argv[1], freq[0]);
             }
-            else if (json_typeof(json_object_get(variable, "value")) == JSON_ARRAY)
+            else if (json_typeof(json_object_get(var, "value")) == JSON_ARRAY)
             {
-
-              // realloc(freq, json_array_size(json_object_get(variable, "value")));
+              arg_len = json_array_size(json_object_get(var, "value"));
+              freq = malloc(arg_len * sizeof(double));
               if (DEBUG)
               {
-                printf("[DEBUG] Argument '%s' is array with size of %d.\n", argv[1], SIZEOF_ARR(freq));
-                printf("[DEBUG] Argument '%s' is array with size of %d.\n", argv[1], sizeof(double));
-                printf("[DEBUG] Argument '%s' is array with size of %d.\n", argv[1], sizeofx(freq));
-                printf("[DEBUG] Argument '%s' is array with size of %d.\n", argv[1], sizeof freq);
-                printf("[DEBUG] Argument '%s' is array with size of %d.\n", argv[1], sizeof freq[0]);
+                printf("[DEBUG] Argument '%s' is array with size of %d.\n", argv[1], arg_len);
+                printf("[DEBUG] Argument pointer is allocated dynamiccally with size of %dx%d=%d.\n", sizeof(*freq), arg_len, sizeof(*freq) * arg_len);
               }
+            }
+            else
+            {
+              if (DEBUG)
+                printf("[DEBUG] Argument value is not supported.\n");
             }
           }
           else
           {
             if (DEBUG)
-              printf("[DEBUG] Argument not found in workspace.\n");
+              printf("[DEBUG] Argument value not found in workspace.\n");
           }
-          // if (variable && (json_typeof(variable) == JSON_REAL || json_typeof(variable) == JSON_ARRAY))
-          // {
-          //   var_found = true;
-          //   if (json_typeof(variable) == JSON_REAL)
-          //     *freq = json_number_value(variable);
-          //   else
-          //   {
-          //     // vector operation here
-          //   }
-          // }
-
           break;
         }
         if (DEBUG)
           printf("[DEBUG] Argument not found in workspace.\n");
       }
     }
-
-    // if (var_found)
-    // {
-    //   printf("Variable found in workspace\n");
-    // }
-    // if (!var_found)
-    //   *freq = atof(argv[1]);
   }
 
   /* calculate wavelength */
