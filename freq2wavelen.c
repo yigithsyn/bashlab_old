@@ -16,14 +16,6 @@
 #include <sys/stat.h>
 #include <stdbool.h>
 
-// return true if the file specified
-// by the filename exists
-bool file_exists(const char *filename)
-{
-  struct stat buffer;
-  return stat(filename, &buffer) == 0 ? true : false;
-}
-
 #include "jansson.h"
 
 static struct stat stat_buff;
@@ -123,6 +115,8 @@ int main(int argc, char *argv[])
   //   {
   //   }
   // }
+
+  
   free(freq);
   free(wlen);
   json_decref(workspace);
