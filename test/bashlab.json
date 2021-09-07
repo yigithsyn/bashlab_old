@@ -2,11 +2,18 @@
   "variables": [
     {
       "name": "freq",
-      "value": 1e3
+      "value": 1000.0
     },
     {
       "name": "freqs",
-      "value": [5E6, 3E9]
+      "value": [
+        5000000.0,
+        3000000000.0
+      ]
+    },
+    {
+      "name": "ans",
+      "value": 299792.45799999998
     }
   ]
 }

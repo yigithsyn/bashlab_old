@@ -25,7 +25,6 @@ static bool valid_workspace = false;
 
 int main(int argc, char *argv[])
 {
-
   if (argc == 1)
   {
     printf(HELP);
@@ -33,6 +32,7 @@ int main(int argc, char *argv[])
   }
 
   size_t arg_len = 0;
+  char res_name[20] = {'\0'};
   double *freq = NULL, *wlen = NULL;
   workspace = json_load_file(WORKSPACE, 0, json_error);
   if (stat(WORKSPACE, &stat_buff) == 0)
@@ -73,6 +73,8 @@ int main(int argc, char *argv[])
             {
               arg_len = json_array_size(json_object_get(var, "value"));
               freq = malloc(arg_len * sizeof(double));
+              for (size_t i = 0; i < arg_len; ++i)
+                freq[i] = json_real_value(json_array_get(json_object_get(var, "value"), i));
               if (DEBUG)
               {
                 printf("[DEBUG] Argument '%s' is array with size of %d.\n", argv[1], arg_len);
@@ -94,29 +96,70 @@ int main(int argc, char *argv[])
         }
         if (DEBUG)
           printf("[DEBUG] Argument not found in workspace.\n");
+        arg_len = 1;
+        freq = malloc(sizeof(double));
+        freq[0] = atof(argv[1]);
       }
+    }
+    else
+    {
+      arg_len = 1;
+      freq = malloc(sizeof(double));
+      freq[0] = atof(argv[1]);
     }
   }
 
-  /* calculate wavelength */
-  // if (SIZEOF_ARR(freq) == 1)
-  // {
-  //   printf("%.6e\n", freq[0]);
-  //   double wavelen = (double)(C0) / freq[0];
-  //   printf("%.6e", wavelen);
-  // }
+  /* calculate */
+  wlen = malloc(arg_len * sizeof(double));
+  for (size_t i = 0; i < arg_len; ++i)
+    wlen[i] = (double)(C0) / freq[i];
+  if (DEBUG)
+    for (size_t i = 0; i < arg_len; ++i)
+      printf("[DEBUG] Result[%d]: %f.\n", i, (double)(C0) / freq[i]);
 
-  /* print out and add workspace */
-  // if (stat(WORKSPACE, &stat_buff) == 0)
-  // {
-  //   json_error_t *json_error = NULL;
-  //   json_t *workspace = json_load_file("workspace.json", 0, json_error);
-  //   if (workspace != NULL && json_typeof(workspace) == JSON_OBJECT)
-  //   {
-  //   }
-  // }
+  /* print out */
+  if (argc == 2)
+    for (size_t i = 0; i < arg_len; ++i)
+      printf("%f\n", (double)(C0) / freq[i]);
+      
+  /* add workspace */
+  if (valid_workspace)
+  {
+    json_t *variables = json_object_get(workspace, "variables");
 
-  
+    if (argc == 2)
+      strcpy(res_name, "ans");
+    else
+      strcpy(res_name, argv[2]);
+
+    /* delete existing */
+    size_t index;
+    json_t *value;
+    json_array_foreach(variables, index, value)
+    {
+      if (strcmp(json_string_value(json_object_get(value, "name")), res_name) == 0)
+        json_array_remove(variables, index);
+    }
+
+    /* add new */
+    json_t *res = json_object();
+    json_object_set_new(res, "name", json_string(res_name));
+    json_t *res_val = NULL;
+    if (arg_len == 1)
+      res_val = json_real(wlen[0]);
+    else
+    {
+      res_val = json_array();
+      for (size_t i = 0; i < arg_len; ++i)
+        json_array_append_new(res_val, json_real(wlen[i]));
+    }
+    json_object_set_new(res, "value", res_val);
+    json_array_append_new(variables, res);
+
+    /* write workspace */
+    json_dump_file(workspace, WORKSPACE, JSON_INDENT(2));
+  }
+
   free(freq);
   free(wlen);
   json_decref(workspace);
