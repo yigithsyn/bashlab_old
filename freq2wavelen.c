@@ -1,7 +1,5 @@
-#define HELP "\n"                                                        \
-             "Frequency to wavelength convert\n"                         \
-             "Usage: freq2wavelen <freq(s)> \n"                          \
-             "                    <freq(s)> <out> \n\n"                  \
+#define HELP "Frequency to wavelength convert\n"                         \
+             "Usage: freq2wavelen <freq(s)> <=out>\n"                    \
              "<freq>: input value [double] or variable name [string] \n" \
              "<out> : output variable name [string] \n"
 
@@ -11,8 +9,6 @@
 
 #include <stdio.h>
 #include <string.h>
-// #include <ctype.h>
-// #include <stdlib.h>
 #include <sys/stat.h>
 #include <stdbool.h>
 
