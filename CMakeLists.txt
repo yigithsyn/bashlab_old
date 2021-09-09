@@ -36,3 +36,4 @@ include_directories(include)
 
 file(GLOB SOURCES "src/*.cpp" "src/*.c")
 add_executable(freq2wavelen freq2wavelen.c)
+add_executable(typeof typeof.c ${SOURCES})
