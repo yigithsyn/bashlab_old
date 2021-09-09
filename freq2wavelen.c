@@ -1,12 +1,12 @@
-#define HELP "---------- Frequency to wavelength convert -------------\n"\
-             "Usage: freq2wavelen <freq> <=out>                       \n"\
-             "<freq>: input value (double[]) or variable name (string)\n"\
-             "<out> : output variable name [string]                   \n"
+#define HELP "---------------- Frequency to wavelength convert -------------\n"\
+             "Usage: freq2wavelen <freq> <=out>                             \n"\
+             "freq: input value (double[]) or variable name                 \n"\
+             "out : output variable name                                      "
 
 #define DEBUG 1
 
 #include "macros.h"
-
+ 
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
