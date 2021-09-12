@@ -12,8 +12,15 @@
       ]
     },
     {
+      "name": "y",
+      "value": [
+        1.0,
+        4.0
+      ]
+    },
+    {
       "name": "ans",
-      "value": "JSON_STRING"
+      "value": 2.5
     }
   ]
 }
