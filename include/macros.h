@@ -1,4 +1,5 @@
 #define WORKSPACE "bashlab.json"
+#define BL_MAX_ARG_NUM 8
 
 #define BL_ERROR_NO_WORKSPACE "No valid workspace found."
 #define BL_ERROR_VARIABLE_NOT_FOUND "Variable not found."

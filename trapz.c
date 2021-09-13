@@ -20,7 +20,8 @@ static struct stat stat_buff;
 static json_error_t *json_error;
 static json_t *workspace;
 static bool valid_workspace = false;
-static char res_name[20] = {'\0'};
+static bool has_out_var = false;
+static char out_name[20] = {'\0'};
 
 #include "trapz.h"
 
@@ -34,7 +35,7 @@ int main(int argc, char *argv[])
   }
 
   /* routine variables */
-  json_t *variable = NULL;
+  json_t *variables[BL_MAX_ARG_NUM];
   json_t *result = NULL;
   size_t ivar_index;
   json_t *ivar;
@@ -45,38 +46,41 @@ int main(int argc, char *argv[])
     if (workspace != NULL && json_typeof(workspace) == JSON_OBJECT)
       valid_workspace = true;
 
-  /* check for variable */
+  /* check for variables */
+  if (argc > 2 && argv[argc - 1][0] == '=')
+    has_out_var = true;
 
-  json_array_foreach(json_object_get(workspace, "variables"), ivar_index, ivar)
+  for (int i = 1; i < argc - has_out_var; ++i)
   {
-    if (strcmp(json_string_value(json_object_get(ivar, "name")), argv[1]) == 0)
+    json_array_foreach(json_object_get(workspace, "variables"), ivar_index, ivar)
     {
-      if (DEBUG)
-        printf("[DEBUG] Argument '%s' found in workspace.\n", argv[1]);
-      variable = ivar;
-      break;
+      if (strcmp(json_string_value(json_object_get(ivar, "name")), argv[i]) == 0)
+      {
+        if (DEBUG)
+          printf("[DEBUG] Argument '%s' found in workspace.\n", argv[i]);
+        variables[i - 1] = ivar;
+        break;
+      }
+    }
+    if (variables[i - 1] == NULL)
+    {
+      printf("Error: %s", BL_ERROR_VARIABLE_NOT_FOUND);
+      return 0;
+    }
+    if (json_typeof(json_object_get(variables[i - 1], "value")) != JSON_ARRAY)
+    {
+      printf("Error: %s", BL_ERROR_UNSUPPORTED_ARGUMENT);
+      return 0;
     }
   }
 
-  if (variable == NULL)
-  {
-    printf("Error: %s", BL_ERROR_VARIABLE_NOT_FOUND);
-    return 0;
-  }
-
-  if (json_typeof(json_object_get(variable, "value")) != JSON_ARRAY)
-  {
-    printf("Error: %s", BL_ERROR_UNSUPPORTED_ARGUMENT);
-    return 0;
-  }
-
   /* operation */
-  size_t N = json_array_size(json_object_get(variable, "value"));
+  size_t N = json_array_size(json_object_get(variables[0], "value"));
   double *y = malloc(N * sizeof(double));
   if (DEBUG)
     printf("[DEBUG] Input array size '%zu'.\n", N);
 
-  json_array_foreach(json_object_get(variable, "value"), ivar_index, ivar)
+  json_array_foreach(json_object_get(variables[0], "value"), ivar_index, ivar)
   {
     y[ivar_index] = json_real_value(ivar);
     if (DEBUG)
@@ -84,8 +88,11 @@ int main(int argc, char *argv[])
   }
 
   result = json_real(trapz1(y, N));
+
+  free(y);
+
   /* print out */
-  if (argc == 2)
+  if (!has_out_var)
     printf("%f\n", json_real_value(result));
 
   /* add workspace */
@@ -93,23 +100,23 @@ int main(int argc, char *argv[])
   {
     json_t *variables = json_object_get(workspace, "variables");
 
-    if (argc == 2)
-      strcpy(res_name, "ans");
+    if (!has_out_var)
+      strcpy(out_name, "ans");
     else
-      strcpy(res_name, argv[2]);
+      strcpy(out_name, argv[argc - 1]);
 
     /* delete existing */
     size_t index;
     json_t *value;
     json_array_foreach(variables, index, value)
     {
-      if (strcmp(json_string_value(json_object_get(value, "name")), res_name) == 0)
+      if (strcmp(json_string_value(json_object_get(value, "name")), out_name) == 0)
         json_array_remove(variables, index);
     }
 
     /* add new */
     json_t *res = json_object();
-    json_object_set_new(res, "name", json_string(res_name));
+    json_object_set_new(res, "name", json_string(out_name));
     json_object_set_new(res, "value", result);
     json_array_append_new(variables, res);
 
@@ -117,5 +124,9 @@ int main(int argc, char *argv[])
     json_dump_file(workspace, WORKSPACE, JSON_INDENT(2));
   }
 
+  /* free memory */
+  for (int i = 0; i < argc-1-has_out_var; ++i)
+    json_decref(variables[i]);
+    
   return 0;
 }
