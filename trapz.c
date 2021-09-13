@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
     if (!has_out_var)
       strcpy(out_name, "ans");
     else
-      strcpy(out_name, argv[argc - 1]);
+      strcpy(out_name, argv[argc - 1]+1);
 
     /* delete existing */
     size_t index;

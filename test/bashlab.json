@@ -28,6 +28,14 @@
     {
       "name": "ans",
       "value": 1.5
+    },
+    {
+      "name": "z",
+      "value": 2.5
+    },
+    {
+      "name": "z2",
+      "value": 1.5
     }
   ]
 }
