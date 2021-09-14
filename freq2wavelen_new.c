@@ -1,9 +1,7 @@
-#define HELP "-------------- Trapezoidal integration method ----------------\n" \
-             "Usage: trapz <y> <=out>                                       \n" \
-             "       trapz <x> <y> <=out>                                   \n" \
-             " x  : nodes                                                  \n"  \
-             " y  : values                                                 \n"  \
-             " out: output variable name [optional]                        \n"
+#define HELP "---------------- Frequency to wavelength convert -------------\n" \
+             "Usage: freq2wavelen <freq> <=out>                             \n" \
+             "freq: input value (double[]) or variable name                 \n" \
+             "out : output variable name         
 
 #define DEBUG 1
 
@@ -63,11 +61,8 @@ int main(int argc, char *argv[])
       }
     }
     if (arguments[i - 1] == NULL)
-    {
-      printf("Error: %s: %s", BL_ERROR_VARIABLE_NOT_FOUND, argv[i]);
-      return 0;
-    }
-    if (json_typeof(json_object_get(arguments[i - 1], "value")) != JSON_ARRAY)
+      arguments[i - 1] = json_real(atof(argv[1]));
+    if (json_typeof(json_object_get(arguments[i - 1], "value")) != JSON_ARRAY && json_typeof(json_object_get(arguments[i - 1], "value")) != JSON_REAL)
     {
       printf("Error: %s", BL_ERROR_UNSUPPORTED_ARGUMENT);
       return 0;
@@ -75,35 +70,16 @@ int main(int argc, char *argv[])
   }
 
   /* operation */
-  size_t N = json_array_size(json_object_get(arguments[0], "value"));
-  double *y = malloc(N * sizeof(double));
-  if (DEBUG)
-    printf("[DEBUG] Input array size '%zu'.\n", N);
-
-  json_array_foreach(json_object_get(arguments[0], "value"), ivar_index, ivar)
+  if (json_typeof(json_object_get(arguments[0], "value")) == JSON_REAL)
   {
-    y[ivar_index] = json_real_value(ivar);
-    if (DEBUG)
-      printf("[DEBUG] y[%zu] = %f.\n", ivar_index, json_real_value(ivar));
+    result = json_real((double)(C0) / json_real_value(json_object_get(arguments[0], "value")));
   }
-
-  if (argc - 1 - has_out_var == 1)
-    result = json_real(trapz1(y, N));
-  else
-  {
-    double *x = y;
-    y = malloc(N * sizeof(double));
-    json_array_foreach(json_object_get(arguments[1], "value"), ivar_index, ivar)
-    {
-      y[ivar_index] = json_real_value(ivar);
-      if (DEBUG)
-        printf("[DEBUG] y[%zu] = %f.\n", ivar_index, json_real_value(ivar));
+  else{
+    result = json_array();
+    json_array_foreach(json_object_get(arguments[0], "value"), ivar_index, ivar){
+      json_array_append_new(result, json_real((double)(C0) / json_real_value(ivar)));
     }
-    result = json_real(trapz2(x, y, N));
-    free(x);
   }
-
-  free(y);
 
   if (DEBUG)
     printf("[DEBUG] Result = %f.\n", json_real_value(result));
@@ -134,7 +110,11 @@ int main(int argc, char *argv[])
     /* add new */
     json_t *res = json_object();
     json_object_set_new(res, "name", json_string(out_name));
-    json_object_set_new(res, "value", result);
+    if (json_typeof(json_object_get(arguments[0], "value")) == JSON_REAL)
+      json_object_set_new(res, "value", result);
+    // else
+    // {
+    // }
     json_array_append_new(variables, res);
 
     /* write workspace */
