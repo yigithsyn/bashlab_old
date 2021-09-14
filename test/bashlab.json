@@ -14,32 +14,24 @@
     {
       "name": "y",
       "value": [
-        1.0,
-        4.0
+        9.0,
+        16.0
       ]
     },
     {
       "name": "x",
       "value": [
-        1.0,
-        2.0
+        3.0,
+        4.0
       ]
     },
     {
-      "name": "z",
-      "value": 2.5
-    },
-    {
-      "name": "z2",
-      "value": 1.5
-    },
-    {
       "name": "ans",
-      "value": 2.5
+      "value": 12.5
     },
     {
-      "name": "c",
-      "value": 2.5
+      "name": "k",
+      "value": 12.5
     }
   ]
 }

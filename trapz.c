@@ -1,15 +1,15 @@
 #define HELP "-------------- Trapezoidal integration method ----------------\n" \
              "Usage: trapz <y> <=out>                                       \n" \
              "       trapz <x> <y> <=out>                                   \n" \
-             " x  : nodes                                                  \n" \
-             " y  : values                                                 \n" \
+             " x  : nodes                                                  \n"  \
+             " y  : values                                                 \n"  \
              " out: output variable name [optional]                        \n"
 
 #define DEBUG 1
 
 #include "macros.h"
 
-// #include <stdio.h>
+#include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <stdbool.h>
@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
   /* routine variables */
   json_error_t *json_error = NULL;
   json_t *workspace;
-  json_t *variables[BL_MAX_ARG_NUM];
+  json_t *variables[BL_MAX_ARG_NUM] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
   json_t *result = NULL;
   json_t *ivar;
   size_t ivar_index;
@@ -49,6 +49,7 @@ int main(int argc, char *argv[])
   /* check for variables */
   if (argc > 2 && argv[argc - 1][0] == '=')
     has_out_var = true;
+
 
   for (int i = 1; i < argc - has_out_var; ++i)
   {
@@ -64,7 +65,7 @@ int main(int argc, char *argv[])
     }
     if (variables[i - 1] == NULL)
     {
-      printf("Error: %s", BL_ERROR_VARIABLE_NOT_FOUND);
+      printf("Error: %s: %s", BL_ERROR_VARIABLE_NOT_FOUND, argv[i]);
       return 0;
     }
     if (json_typeof(json_object_get(variables[i - 1], "value")) != JSON_ARRAY)
@@ -87,9 +88,26 @@ int main(int argc, char *argv[])
       printf("[DEBUG] y[%zu] = %f.\n", ivar_index, json_real_value(ivar));
   }
 
-  result = json_real(trapz1(y, N));
+  if (argc - 1 - has_out_var == 1)
+    result = json_real(trapz1(y, N));
+  else
+  {
+    double *x = y;
+    y = malloc(N * sizeof(double));
+    json_array_foreach(json_object_get(variables[1], "value"), ivar_index, ivar)
+    {
+      y[ivar_index] = json_real_value(ivar);
+      if (DEBUG)
+        printf("[DEBUG] y[%zu] = %f.\n", ivar_index, json_real_value(ivar));
+    }
+    result = json_real(trapz2(x, y, N));
+    free(x);
+  }
 
   free(y);
+
+  if (DEBUG)
+    printf("[DEBUG] Result = %f.\n", json_real_value(result));
 
   /* print out */
   if (!has_out_var)
