@@ -1,9 +1,9 @@
 #define HELP "-------------- Trapezoidal integration method ----------------\n" \
              "Usage: trapz <y> <=out>                                       \n" \
              "       trapz <x> <y> <=out>                                   \n" \
-             "- x  : nodes                                                  \n" \
-             "- y  : values                                                 \n" \
-             "- out: output variable name [optional]                        \n"
+             " x  : nodes                                                  \n" \
+             " y  : values                                                 \n" \
+             " out: output variable name [optional]                        \n"
 
 #define DEBUG 1
 
@@ -17,8 +17,6 @@
 #include "jansson.h"
 
 static struct stat stat_buff;
-static json_error_t *json_error;
-static json_t *workspace;
 static bool valid_workspace = false;
 static bool has_out_var = false;
 static char out_name[20] = {'\0'};
@@ -35,10 +33,12 @@ int main(int argc, char *argv[])
   }
 
   /* routine variables */
+  json_error_t *json_error = NULL;
+  json_t *workspace;
   json_t *variables[BL_MAX_ARG_NUM];
   json_t *result = NULL;
-  size_t ivar_index;
   json_t *ivar;
+  size_t ivar_index;
 
   /* load workspace */
   workspace = json_load_file(WORKSPACE, 0, json_error);
@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
     if (!has_out_var)
       strcpy(out_name, "ans");
     else
-      strcpy(out_name, argv[argc - 1]+1);
+      strcpy(out_name, argv[argc - 1] + 1);
 
     /* delete existing */
     size_t index;
@@ -125,8 +125,12 @@ int main(int argc, char *argv[])
   }
 
   /* free memory */
-  for (int i = 0; i < argc-1-has_out_var; ++i)
+  for (int i = 0; i < argc - 1 - has_out_var; ++i)
     json_decref(variables[i]);
-    
+
+  json_decref(workspace);
+  json_decref(result);
+  json_decref(ivar);
+
   return 0;
 }

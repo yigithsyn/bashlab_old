@@ -26,16 +26,20 @@
       ]
     },
     {
-      "name": "ans",
-      "value": 1.5
-    },
-    {
       "name": "z",
       "value": 2.5
     },
     {
       "name": "z2",
       "value": 1.5
+    },
+    {
+      "name": "ans",
+      "value": 2.5
+    },
+    {
+      "name": "c",
+      "value": 2.5
     }
   ]
 }
