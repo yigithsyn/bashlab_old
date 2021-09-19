@@ -1,6 +1,8 @@
 {
   "files.associations": {
-    "macros.h": "c"
+    "macros.h": "c",
+    "trapz.h": "c",
+    "jansson.h": "c"
   },
   "C_Cpp.default.includePath": [
     "${workspaceFolder}/include",

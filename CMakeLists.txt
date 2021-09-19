@@ -31,6 +31,7 @@ if (WIN32)
 endif (WIN32)
 
 include_directories(include)
+include_directories(vcpkg-261c458/installed/x86-windows/include)
 
 
 
