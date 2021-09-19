@@ -3,7 +3,7 @@
     "macros.h": "c"
   },
   "C_Cpp.default.includePath": [
-    "${workspaceFolder}/include"
+    "${workspaceFolder}/include",
     "${workspaceFolder}/vcpkg-261c458/installed/x86-windows/include"
   ]
 }
