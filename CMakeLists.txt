@@ -40,3 +40,17 @@ add_executable(freq2wavelen freq2wavelen.c)
 add_executable(typeof typeof.c ${SOURCES})
 
 add_executable(trapz trapz.c ${SOURCES}) 
+
+# python scripts
+unset(LM_SENSORS_INCLUDE_DIR CACHE) 
+find_path(LM_SENSORS_INCLUDE_DIR NAMES b PATHS ${bashlab_SOURCE_DIR}/a)
+find_library(LM_SENSORS_LIBRARY NAMES libsensors sensors) 
+
+message("LM_SENSORS include dir = ${LM_SENSORS_INCLUDE_DIR}")
+message("LM_SENSORS lib = ${LM_SENSORS_LIBRARY}")
+
+set(LM_SENSORS_LIBRARIES ${LM_SENSORS_LIBRARY})
+set(LM_SENSORS_INCLUDE_DIRS ${LM_SENSORS_INCLUDE_DIR})
+unset(PYTHON CACHE)
+find_path(PYTHON NAMES Debug PATHS ${bashlab_SOURCE_DIR})
+message("Python found = ${PYTHON}") 
