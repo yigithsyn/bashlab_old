@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.17.0)
 project(bashlab VERSION 0.1.0)
 
 find_package(Git)
@@ -41,16 +41,32 @@ add_executable(typeof typeof.c ${SOURCES})
 
 add_executable(trapz trapz.c ${SOURCES}) 
 
-# python scripts
-unset(LM_SENSORS_INCLUDE_DIR CACHE) 
-find_path(LM_SENSORS_INCLUDE_DIR NAMES b PATHS ${bashlab_SOURCE_DIR}/a)
-find_library(LM_SENSORS_LIBRARY NAMES libsensors sensors) 
+# python
+set(PYTHON_DIR ${bashlab_SOURCE_DIR}/python)
+unset(PYTHON_EXE CACHE)
 
-message("LM_SENSORS include dir = ${LM_SENSORS_INCLUDE_DIR}")
-message("LM_SENSORS lib = ${LM_SENSORS_LIBRARY}")
+# python38
+unset(PYTHON38_EXE CACHE)
+find_path(PYTHON38_EXE NAMES "python38/python.exe" PATHS ${PYTHON_DIR})
+message("PYTHON38_EXE = ${PYTHON38_EXE}")
+if(PYTHON38_EXE STREQUAL "PYTHON38_EXE-NOTFOUND")
+  message("Installing Python3.8 ...")
+  unset(PYTHON38_INSTALL_FILE CACHE)
+  find_path(PYTHON38_INSTALL_FILE NAMES Miniconda3-py38_4.10.3-Windows-x86.exe PATHS ${PYTHON_DIR}/download)
+  message("PYTHON38_INSTALL_FILE = ${PYTHON38_INSTALL_FILE}")
+  if(PYTHON_ZIP STREQUAL "PYTHON_ZIP-NOTFOUND")
+    message("Downloading Python3.8 install file ...")
+    file(MAKE_DIRECTORY ${PYTHON_DIR}/download) 
+    file(DOWNLOAD "https://repo.anaconda.com/miniconda/Miniconda3-py38_4.10.3-Windows-x86.exe" "${PYTHON_DIR}/download/Miniconda3-py38_4.10.3-Windows-x86.exe" SHOW_PROGRESS)
+  endif()
+endif()
 
-set(LM_SENSORS_LIBRARIES ${LM_SENSORS_LIBRARY})
-set(LM_SENSORS_INCLUDE_DIRS ${LM_SENSORS_INCLUDE_DIR})
-unset(PYTHON CACHE)
-find_path(PYTHON NAMES Debug PATHS ${bashlab_SOURCE_DIR})
-message("Python found = ${PYTHON}") 
+
+# execute_process(COMMAND "start" "/wait" "\"\"" "${PYTHON_DIR}/download/Anaconda3-2021.05-Windows-x86.exe" "/InstallationType=JustMe" "/RegisterPython=0" "/S" "/D=${PYTHON_DIR}/" RESULT_VARIABLE res)
+# set(PYTHON38_INSTALL_DIR ${PYTHON_DIR}/python38)
+# cmake_path(NATIVE_PATH PYTHON38_INSTALL_DIR NORMALIZE PYTHON38_INSTALL_DIR)
+# message("${PYTHON38_INSTALL_DIR}") 
+# execute_process(COMMAND "${PYTHON_DIR}/download/Miniconda3-py38_4.10.3-Windows-x86.exe" "/InstallationType=JustMe" "/RegisterPython=0" "/S" "/D=${PYTHON38_INSTALL_DIR}" RESULT_VARIABLE res)
+# message("Executing Anaconda3-2021.05-Windows-x86.exe' = '${res}'")
+
+# file(ARCHIVE_EXTRACT INPUT "${PYTHON_DIR}/download/Anaconda3-2021.05-Windows-x86.zip" DESTINATION ${PYTHON_DIR} VERBOSE)
